@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import middleware from './middleware/error';
 import { Request, Response, NextFunction } from 'express';
+import 'dotenv/config'
 
 // Importing routes dynamically
 import * as routes from './routes/index';

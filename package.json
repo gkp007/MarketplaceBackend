@@ -26,6 +26,7 @@
     "nodemailer": "^6.9.16",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
+    "twilio": "^5.3.5",
     "typescript": "^5.6.3",
     "validator": "^13.12.0"
   },

@@ -1,8 +1,7 @@
-import dotenv from "dotenv";
 import app from "./app";
 import connectDb from "./config/db";
+import 'dotenv/config'
 
-dotenv.config();
 // DB
 connectDb();
 const server = app.listen(process.env.PORT,()=>{

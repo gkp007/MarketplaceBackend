@@ -2,31 +2,25 @@ import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import JWT from "jsonwebtoken";
-import crypto from "crypto";
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Enter your name"],
-    maxlength: [30, "can't exceed 30 char"],
-    minlength: [4, "name should have grater then  4 char"],
+    maxlength: [30, "Can't exceed 30 characters"],
+    minlength: [4, "Name should be greater than 4 characters"],
   },
   email: {
     type: String,
     required: [true, "Enter your Email"],
     unique: true,
-    validate: [validator.isEmail, "Please enter valid email"],
+    validate: [validator.isEmail, "Please enter a valid email"],
   },
-  phone: {
-    type: Number,
+  phoneNumber: {
+    type: String,
     required: [true, "Enter your mobile number"],
-    maxlength: [12, "Number max be 12 digits"],
-    minlength: [10, "Number min be 10 digits"],
-  },
-  phone2: {
-    type: Number,
-    maxlength: [12, "Number max be 12 digits"],
-    minlength: [10, "Number min be 10 digits"],
+    unique: true,
+    maxlength: [15, "Number can be a maximum of 15 digits"],
   },
   avatar: {
     public_id: {
@@ -42,15 +36,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "user",
   },
+  otp: {
+    type: Number,
+    minlength: [6, "OTP must be 6 digits"],
+  },
+  otpExpires: Date, // Expiry time for OTP
 });
-
 
 // JWT token
 userSchema.methods.getJWTToken = function (): string {
   return JWT.sign({ id: this._id }, process.env.JWT_SECRET as string, {
-      expiresIn: process.env.JWT_EXPIER as string,
+    expiresIn: process.env.JWT_EXPIER as string,
   });
 };
 
-
-export default mongoose.model("user", userSchema);
+export default mongoose.model("User", userSchema);
