@@ -1,18 +1,20 @@
 {
-  "name": "MarketplaceBackend",
+  "name": "marketplace-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.ts",
   "repository": "https://github.com/gkp007/MarketplaceBackend.git",
   "author": "Debabrata Giri <debabratagiri@email.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node backend/server.ts",
+    "dev": "nodemon backend/server.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "@types/node": "^22.9.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
+    "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -26,6 +28,10 @@
     "validator": "^13.12.0"
   },
   "devDependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "nodemon": "^3.1.1"
   }
 }
