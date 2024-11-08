@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import 'dotenv/config'
 
 interface User {
     getJWTToken: () => string;

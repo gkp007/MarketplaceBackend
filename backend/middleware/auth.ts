@@ -3,6 +3,7 @@ import ErrorHandler from "../utils/errorHnadeler";
 import catchAsyncError from "./catchAsyncError";
 import JWT from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import 'dotenv/config'
 
 interface DecodedData {
     id: string;

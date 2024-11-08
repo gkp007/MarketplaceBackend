@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import JWT from "jsonwebtoken";
+import 'dotenv/config'
 
 const userSchema = new mongoose.Schema({
   name: {
