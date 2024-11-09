@@ -15,15 +15,15 @@ export const sendOtp = async (
 ) => {
   const { phoneNumber } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000);
-
   try {
     // Send OTP via Twilio
     await client.messages.create({
-      body: `Your verification code is ${otp}`,
-      from: process.env.TWILIO_PHONE_NUMBER,
+      body: `Your verification code is greate ${otp}`,
+      from: process.env.TWILIO_AUTH_TOKEN,
       to: phoneNumber,
     });
-
+    
+    
     const user = await User.findOneAndUpdate(
       { phoneNumber },
       { otp, otpExpires: Date.now() + 5 * 60 * 1000 },
@@ -33,7 +33,6 @@ export const sendOtp = async (
     if (!user) {
       return next(new ErrorHandler("Failed to send OTP", 401));
     }
-
     res.status(200).json({ success: true, message: "OTP sent successfully" });
   } catch (error: any) {
     return next(new ErrorHandler(error.message || "Failed to send OTP", 500));
