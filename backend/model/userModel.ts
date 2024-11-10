@@ -1,10 +1,25 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import validator from "validator";
-import bcrypt from "bcrypt";
 import JWT from "jsonwebtoken";
-import 'dotenv/config'
+import 'dotenv/config';
 
-const userSchema = new mongoose.Schema({
+interface IUser extends Document {
+  name: string;
+  email: string;
+  phoneNumber: string;
+  avatar: {
+    public_id: string;
+    url: string;
+  };
+  role: string;
+  otp?: number;
+  otpExpires?: Date;
+  emailOtp?: number;
+  emailOtpExpires?: Date;
+  getJWTToken: () => string;
+}
+
+const userSchema = new mongoose.Schema<IUser>({
   name: {
     type: String,
     required: [true, "Enter your name"],
@@ -41,14 +56,20 @@ const userSchema = new mongoose.Schema({
     type: Number,
     minlength: [6, "OTP must be 6 digits"],
   },
-  otpExpires: Date, // Expiry time for OTP
+  otpExpires: Date,
+  emailOtp: {
+    type: Number,
+    minlength: [6, "OTP must be 6 digits"],
+  },
+  emailOtpExpires: Date,
 });
 
-// JWT token
+// JWT token generation method
 userSchema.methods.getJWTToken = function (): string {
   return JWT.sign({ id: this._id }, process.env.JWT_SECRET as string, {
     expiresIn: process.env.JWT_EXPIER as string,
   });
 };
 
-export default mongoose.model("User", userSchema);
+const User = mongoose.model<IUser>("User", userSchema);
+export default User;
