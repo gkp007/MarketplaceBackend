@@ -4,26 +4,29 @@ import { Request, Response, NextFunction } from "express";
 import "dotenv/config";
 import { sendEmail } from "../utils/sendEmail";
 import ErrorHandler from "../utils/errorHnadeler";
+import { createKolkataTime } from "../config/createKolkataTime";
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
 
 // Send OTP via SMS
-export const sendOtp = async (req: Request, res: Response, next: NextFunction) => {
+export const sendOtp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { phoneNumber } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000);
-
   try {
     await client.messages.create({
       body: `Your verification code is ${otp}`,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: phoneNumber,
     });
-
     const user = await User.findOneAndUpdate(
       { phoneNumber },
-      { otp, otpExpires: Date.now() + 10 * 60 * 1000 },
+      { otp, otpExpires: createKolkataTime(10) },
       { new: true, upsert: true }
     );
 
@@ -36,21 +39,30 @@ export const sendOtp = async (req: Request, res: Response, next: NextFunction) =
 };
 
 // Verify Mobile OTP
-export const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
+export const verifyOtp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { phoneNumber, otp } = req.body;
 
   try {
     const user = await User.findOne({ phoneNumber });
-
     if (!user) return next(new ErrorHandler("User not found", 404));
-
-    if (user.otp === otp && user.otpExpires && user.otpExpires > new Date()) {
+    const currentDate = createKolkataTime();
+    if (
+      user.otp === otp &&
+      user.otpExpires &&
+      user.otpExpires > new Date(currentDate)
+    ) {
       user.otp = undefined;
       user.otpExpires = undefined;
       await user.save();
 
       const token = user.getJWTToken();
-      res.status(200).json({ success: true, message: "OTP verified successfully", token });
+      res
+        .status(200)
+        .json({ success: true, message: "OTP verified successfully", token });
     } else {
       return next(new ErrorHandler("Invalid or expired OTP", 400));
     }
@@ -60,14 +72,21 @@ export const verifyOtp = async (req: Request, res: Response, next: NextFunction)
 };
 
 // Send OTP via Email
-export const sendEmailOtp = async (req: Request, res: Response, next: NextFunction) => {
+export const sendEmailOtp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { email } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000);
 
   try {
     const user = await User.findOneAndUpdate(
       { email },
-      { emailOtp: otp, emailOtpExpires: Date.now() + 10 * 60 * 1000 },
+      {
+        emailOtp: otp,
+        emailOtpExpires: createKolkataTime(10),
+      },
       { new: true, upsert: true }
     );
 
@@ -86,21 +105,31 @@ export const sendEmailOtp = async (req: Request, res: Response, next: NextFuncti
 };
 
 // Verify Email OTP
-export const emailVerify = async (req: Request, res: Response, next: NextFunction) => {
+export const emailVerify = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { email, otp } = req.body;
 
   try {
     const user = await User.findOne({ email });
-
     if (!user) return next(new ErrorHandler("User not found", 404));
+    const currentDate = createKolkataTime();
 
-    if (user.emailOtp === otp && user.emailOtpExpires && user.emailOtpExpires > new Date()) {
+    if (
+      user.emailOtp === otp &&
+      user.emailOtpExpires &&
+      user.emailOtpExpires > new Date(currentDate)
+    ) {
       user.emailOtp = undefined;
       user.emailOtpExpires = undefined;
       await user.save();
 
       const token = user.getJWTToken();
-      res.status(200).json({ success: true, message: "OTP verified successfully", token });
+      res
+        .status(200)
+        .json({ success: true, message: "OTP verified successfully", token });
     } else {
       return next(new ErrorHandler("Invalid or expired OTP", 400));
     }

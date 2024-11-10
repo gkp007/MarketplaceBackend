@@ -22,30 +22,27 @@ interface IUser extends Document {
 const userSchema = new mongoose.Schema<IUser>({
   name: {
     type: String,
+    default:"unknown",
     required: [true, "Enter your name"],
     maxlength: [30, "Can't exceed 30 characters"],
     minlength: [4, "Name should be greater than 4 characters"],
   },
   email: {
     type: String,
-    required: [true, "Enter your Email"],
     unique: true,
     validate: [validator.isEmail, "Please enter a valid email"],
   },
   phoneNumber: {
     type: String,
-    required: [true, "Enter your mobile number"],
     unique: true,
-    maxlength: [15, "Number can be a maximum of 15 digits"],
+    maxlength: [14, "Number can be a maximum of 10 digits"],
   },
   avatar: {
     public_id: {
       type: String,
-      required: true,
     },
     url: {
       type: String,
-      required: true,
     },
   },
   role: {
