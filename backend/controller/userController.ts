@@ -129,17 +129,33 @@ export const emailVerify = async (
       await user.save();
 
       const token = user.getJWTToken();
-      res
-        .status(200)
-        .json({
-          success: true,
-          message: "OTP verified successfully",
-          token,
-          user,
-        });
+      res.status(200).json({
+        success: true,
+        message: "OTP verified successfully",
+        token,
+        user,
+      });
     } else {
       return next(new ErrorHandler("Invalid or expired OTP", 400));
     }
+  } catch (error: any) {
+    return next(new ErrorHandler(error.message || "Failed to verify OTP", 500));
+  }
+};
+
+// logout
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    res.cookie("token", null);
+    
+    res.status(200).json({
+      success: true,
+      message: "Logout Sucessfully",
+    });
   } catch (error: any) {
     return next(new ErrorHandler(error.message || "Failed to verify OTP", 500));
   }
