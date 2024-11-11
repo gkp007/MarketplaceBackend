@@ -3,6 +3,7 @@ import Business from "../model/businessModel";
 import ErrorHandler from "../utils/errorHnadeler";
 import "dotenv/config";
 
+// create Business
 export const businessCreate = async (
   req: Request,
   res: Response,

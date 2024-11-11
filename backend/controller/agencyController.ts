@@ -3,6 +3,7 @@ import agencyModel from "../model/agencyModel";
 import ErrorHandler from "../utils/errorHnadeler";
 import { sendEmail } from "../utils/sendEmail";
 
+// send message
 export const sendagencyMessage = async (
   req: Request,
   res: Response,
