@@ -98,7 +98,9 @@ export const sendEmailOtp = async (
       message: `Your email verification code is: ${otp}`,
     });
 
-    res.status(200).json({ success: true, message: "OTP sent successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "OTP sent successfully", email, otp });
   } catch (error: any) {
     return next(new ErrorHandler(error.message || "Failed to send OTP", 500));
   }
@@ -129,7 +131,12 @@ export const emailVerify = async (
       const token = user.getJWTToken();
       res
         .status(200)
-        .json({ success: true, message: "OTP verified successfully", token });
+        .json({
+          success: true,
+          message: "OTP verified successfully",
+          token,
+          user,
+        });
     } else {
       return next(new ErrorHandler("Invalid or expired OTP", 400));
     }
