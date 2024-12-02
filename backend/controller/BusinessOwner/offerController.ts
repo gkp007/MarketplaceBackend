@@ -54,3 +54,27 @@ export const createOffer = async (
     );
   }
 };
+
+export const getOffer = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  try {
+    const offers = await offerModel.find({ business: id });
+
+    if (!offers) {
+      return next(new ErrorHandler("Offer not found", 404));
+    }
+    res.status(200).json({
+      success: true,
+      message: "Offer Get successfully",
+      offers,
+    });
+  } catch (error: any) {
+    return next(
+      new ErrorHandler(error.message || "Internal Server Error", 500)
+    );
+  }
+};

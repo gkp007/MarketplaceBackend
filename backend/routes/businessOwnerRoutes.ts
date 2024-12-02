@@ -5,7 +5,7 @@ import {
   getAllInquiries,
 } from "../controller/BusinessOwner/businessController";
 import { authorizeRoles, isAuthenticatedUser } from "../middleware/auth";
-import { createOffer } from "../controller/BusinessOwner/offerController";
+import { createOffer, getOffer } from "../controller/BusinessOwner/offerController";
 
 const router = express.Router();
 
@@ -20,7 +20,12 @@ router
 router
   .route("/create-offer")
   .post(isAuthenticatedUser, authorizeRoles("BusinessOwner"), createOffer);
-//
+
+router
+  .route("/get-offers/:id")
+  .get(getOffer)
+
+  //
 router
   .route("/inquiries")
   .get(isAuthenticatedUser, authorizeRoles("BusinessOwner"), getAllInquiries);
