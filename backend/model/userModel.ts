@@ -1,28 +1,29 @@
 import mongoose, { Document } from "mongoose";
 import validator from "validator";
 import JWT from "jsonwebtoken";
-import 'dotenv/config';
+import "dotenv/config";
 
 interface IUser extends Document {
   name: string;
   email: string;
   phoneNumber: string;
-  avatar: {
+  avatar?: {
     public_id: string;
     url: string;
   };
-  role: string;
   otp?: number;
   otpExpires?: Date;
   emailOtp?: number;
   emailOtpExpires?: Date;
   getJWTToken: () => string;
+  role: "Admin" | "BusinessOwner" | "User";
+  isBlocked?: boolean;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
   name: {
     type: String,
-    default:"unknown",
+    default: "unknown",
     required: [true, "Enter your name"],
     maxlength: [30, "Can't exceed 30 characters"],
     minlength: [4, "Name should be greater than 4 characters"],
@@ -45,10 +46,8 @@ const userSchema = new mongoose.Schema<IUser>({
       type: String,
     },
   },
-  role: {
-    type: String,
-    default: "user",
-  },
+  role: { type: String, enum: ['Admin', 'BusinessOwner', 'User'], required: true },
+  isBlocked: { type: Boolean, default: false },
   otp: {
     type: Number,
     minlength: [6, "OTP must be 6 digits"],

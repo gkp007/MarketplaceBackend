@@ -16,7 +16,6 @@ interface AuthenticatedRequest extends Request {
 export const isAuthenticatedUser = catchAsyncError(
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const authHeader = req.headers.authorization;
-        
         if (!authHeader) {
             return next(new ErrorHandler("Please login to access this resource", 401));
         }

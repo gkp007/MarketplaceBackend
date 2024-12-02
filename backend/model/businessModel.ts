@@ -1,24 +1,32 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 import validator from "validator";
 import "dotenv/config";
 
 interface Ibusiness extends Document {
-  name: string;
+  owner: mongoose.Schema.Types.ObjectId;
+  businessName: string;
   location: string;
   mobileNumber: string;
   webSiteLink: string;
-  YearInBusiness: string;
+  BusinessOpenDate: Date;
   GSTNO: string;
   category: string;
   serviceList: string[];
-  photo: {
+  photos: {
     public_id: string;
     url: string;
-  };
+  }[];
+  offers: string[];
+  isVerified: boolean;
 }
 
 const businessSchema = new mongoose.Schema<Ibusiness>({
-  name: {
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  businessName: {
     type: String,
     required: [true, "Business name is required"],
     maxlength: [50, "Name cannot exceed 50 characters"],
@@ -44,20 +52,17 @@ const businessSchema = new mongoose.Schema<Ibusiness>({
       message: "Please enter a valid website URL",
     },
   },
-  YearInBusiness: {
-    type: String,
+  BusinessOpenDate: {
+    type: Date,
     required: [true, "Year in business is required"],
-    validate: {
-      validator: (value: string) => validator.isNumeric(value),
-      message: "Please enter a valid year",
-    },
   },
   GSTNO: {
     type: String,
     required: [true, "GST number is required"],
     unique: true,
     validate: {
-      validator: (value: string) => /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(value),
+      validator: (value: string) =>
+        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(value),
       message: "Please enter a valid GST number",
     },
   },
@@ -69,20 +74,24 @@ const businessSchema = new mongoose.Schema<Ibusiness>({
     type: [String],
     required: [true, "Service list is required"],
   },
-  photo: {
-    public_id: {
-      type: String,
-      required: [true, "Photo public_id is required"],
-    },
-    url: {
-      type: String,
-      required: [true, "Photo URL is required"],
-      validate: {
-        validator: (value: string) => validator.isURL(value),
-        message: "Please enter a valid URL for the photo",
+  photos: [
+    {
+      public_id: {
+        type: String,
+        required: [true, "Photo public_id is required"],
+      },
+      url: {
+        type: String,
+        required: [true, "Photo URL is required"],
+        validate: {
+          validator: (value: string) => validator.isURL(value),
+          message: "Please enter a valid URL for the photo",
+        },
       },
     },
-  },
+  ],
+  offers: { type: [String], default: [] },
+  isVerified: { type: Boolean, default: false },
 });
 
 const Business = mongoose.model<Ibusiness>("Business", businessSchema);

@@ -1,4 +1,6 @@
 import userRoutes from "./userRoutes";
-import businessRouter from "./businessRouter";
-import agencyRouter from "./agencyRouter";
-export { userRoutes, businessRouter, agencyRouter };
+import adminRoutes from "./adminRoutes";
+import businessRouter from "./businessOwnerRoutes";
+import normalUserRoutes from "./NormalUserRoutes";
+
+export { userRoutes, adminRoutes, businessRouter, normalUserRoutes };

@@ -112,7 +112,7 @@ export const emailVerify = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email, otp } = req.body;
+  const { email, otp,role } = req.body;
 
   try {
     const user = await User.findOne({ email });
@@ -126,12 +126,14 @@ export const emailVerify = async (
     ) {
       user.emailOtp = undefined;
       user.emailOtpExpires = undefined;
+      user.role = role;
       await user.save();
 
       const token = user.getJWTToken();
       res.status(200).json({
         success: true,
         message: "OTP verified successfully",
+        role,
         token,
         user,
       });
