@@ -4,6 +4,7 @@ import Business from "../../model/businessModel";
 import InquiryModel from "../../model/InquiryModel";
 import mongoose from "mongoose";
 import RatingModel from "../../model/RatingModel";
+import User from "../../model/userModel";
 
 // Add Rating
 export const addRating = async (
@@ -63,5 +64,37 @@ export const makeInquiry = async (
     res.status(201).json({ success: true, data: inquiry });
   } catch (error: any) {
     new ErrorHandler(error.message || "Internal Server Erroe", 500);
+  }
+};
+
+export const updateProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { name, avatar } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) return next(new ErrorHandler("User Not Found", 404));
+
+    if (name) user.name = name;
+
+    if (avatar && typeof avatar === "object") {
+      user.avatar = user.avatar || { public_id: "", url: "" };
+      if (avatar.public_id) user.avatar.public_id = avatar.public_id;
+      if (avatar.url) user.avatar.url = avatar.url;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user,
+    });
+  } catch (error: any) {
+    next(new ErrorHandler(error.message || "Internal Server Error", 500));
   }
 };

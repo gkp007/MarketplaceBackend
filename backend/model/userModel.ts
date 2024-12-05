@@ -4,7 +4,7 @@ import JWT from "jsonwebtoken";
 import "dotenv/config";
 
 interface IUser extends Document {
-  name: string;
+  name?: string;
   email: string;
   phoneNumber: string;
   avatar?: {
