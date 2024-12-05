@@ -5,13 +5,13 @@ interface IInquiry extends Document {
   number: string;
   message: string;
   businessOner: mongoose.Schema.Types.ObjectId;
+  createdAt: Date;
 }
 
 const InquirySchema = new Schema<IInquiry>({
   number: {
     type: String,
     required: [true, "Mobile number is required"],
-    unique: true,
     validate: {
       validator: (value: string) => validator.isMobilePhone(value),
       message: "Please enter a valid mobile number",
@@ -23,6 +23,8 @@ const InquirySchema = new Schema<IInquiry>({
     ref: "Business",
     required: true,
   },
+  createdAt: {type: Date},
 });
 
-export default mongoose.model<IInquiry>("Inquiry", InquirySchema);
+const InquiryModel = mongoose.model<IInquiry>("Inquiry", InquirySchema);
+export default InquiryModel;

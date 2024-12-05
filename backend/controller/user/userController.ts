@@ -125,10 +125,15 @@ export const toggleWatchlist = async (
         createdAt: new Date(),
       });
     } else {
-      const businessIDsAsString = watchlist.businessIDs.map(id => id.toString());
-      
+      const businessIDsAsString = watchlist.businessIDs.map((id) =>
+        id.toString()
+      );
+
       if (businessIDsAsString.includes(businessObjectId.toString())) {
-        watchlist.businessIDs = watchlist.businessIDs.filter((businessId: any) =>businessId.toString() !== businessObjectId.toString());
+        watchlist.businessIDs = watchlist.businessIDs.filter(
+          (businessId: any) =>
+            businessId.toString() !== businessObjectId.toString()
+        );
       } else {
         watchlist.businessIDs.push(businessObjectId as any);
       }
@@ -170,5 +175,53 @@ export const getWatchlist = async (
     });
   } catch (error: any) {
     next(new ErrorHandler(error.message || "Failed to fetch watchlist", 500));
+  }
+};
+
+// enquiry post
+export const enquiryPost = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { businessID } = req.params;
+    const { number, message } = req.body;
+
+    const Inquiry = await InquiryModel.create({
+      number,
+      message,
+      businessOner: businessID,
+      createdAt: createKolkataTime(),
+    });
+    await Inquiry.save();
+    res.status(201).json({
+      success: true,
+      message: "Inquiry added successfully",
+    });
+  } catch (error: any) {
+    next(new ErrorHandler(error.message || "Internal Server Error", 500));
+  }
+};
+
+// enquiry get
+export const enquiryGet = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userID } = req.params;
+
+    const inquiry = await InquiryModel.find({ userID });
+
+    res.status(201).json({
+      success: true,
+      message: "Inquiry Fetch successfully",
+      inquiry
+    })
+
+  } catch (error: any) {
+    next(new ErrorHandler(error.message || "Internal Server Error", 500));
   }
 };

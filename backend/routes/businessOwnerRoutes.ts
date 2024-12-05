@@ -6,6 +6,7 @@ import {
 } from "../controller/BusinessOwner/businessController";
 import { authorizeRoles, isAuthenticatedUser } from "../middleware/auth";
 import { createOffer, getOffer } from "../controller/BusinessOwner/offerController";
+import { enquiryGet, enquiryPost } from "../controller/user/userController";
 
 const router = express.Router();
 
@@ -35,4 +36,8 @@ router
   .route("/business/offer/:id")
   .patch(isAuthenticatedUser, authorizeRoles("BusinessOwner"), addOffer);
 
+
+//inquiry
+router.route("/enquiry-create/:businessID").post(isAuthenticatedUser,authorizeRoles("BusinessOwner"),enquiryPost)
+router.route("/enquiry-get/:userID").get(isAuthenticatedUser,authorizeRoles("BusinessOwner"),enquiryGet)
 export default router;
