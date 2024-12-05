@@ -2,9 +2,12 @@ import { Request, Response, NextFunction } from "express";
 import ErrorHandler from "../../utils/errorHnadeler";
 import Business from "../../model/businessModel";
 import InquiryModel from "../../model/InquiryModel";
-import mongoose from "mongoose";
 import RatingModel from "../../model/RatingModel";
 import User from "../../model/userModel";
+import { createKolkataTime } from "../../config/createKolkataTime";
+import WatchlistModel from "../../model/WatchlistModel";
+import { AuthenticatedRequest } from "../../types/express";
+import mongoose from "mongoose";
 
 // Add Rating
 export const addRating = async (
@@ -36,6 +39,7 @@ export const addRating = async (
       business: Uid,
       rating,
       message,
+      createdAt: createKolkataTime(),
     });
     await newRating.save();
 
@@ -67,6 +71,7 @@ export const makeInquiry = async (
   }
 };
 
+// update profile
 export const updateProfile = async (
   req: Request,
   res: Response,
@@ -96,5 +101,74 @@ export const updateProfile = async (
     });
   } catch (error: any) {
     next(new ErrorHandler(error.message || "Internal Server Error", 500));
+  }
+};
+
+// whatchlict toggle
+export const toggleWatchlist = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { businessID } = req.params;
+    const userID = req.user?._id;
+
+    const businessObjectId = new mongoose.Types.ObjectId(businessID);
+
+    let watchlist = await WatchlistModel.findOne({ userID });
+
+    if (!watchlist) {
+      watchlist = new WatchlistModel({
+        userID,
+        businessIDs: [businessObjectId],
+        createdAt: new Date(),
+      });
+    } else {
+      const businessIDsAsString = watchlist.businessIDs.map(id => id.toString());
+      
+      if (businessIDsAsString.includes(businessObjectId.toString())) {
+        watchlist.businessIDs = watchlist.businessIDs.filter((businessId: any) =>businessId.toString() !== businessObjectId.toString());
+      } else {
+        watchlist.businessIDs.push(businessObjectId as any);
+      }
+    }
+
+    await watchlist.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Watchlist updated successfully",
+      watchlist,
+    });
+  } catch (error: any) {
+    next(new ErrorHandler(error.message || "Failed to toggle watchlist", 500));
+  }
+};
+
+//get watchlist
+export const getWatchlist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userID = req.params.id;
+
+    const watchlist = await WatchlistModel.findOne({ userID }).populate(
+      "businessIDs"
+    );
+
+    if (!watchlist) {
+      return next(new ErrorHandler("Watchlist not found", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Watchlist fetched successfully",
+      watchlist,
+    });
+  } catch (error: any) {
+    next(new ErrorHandler(error.message || "Failed to fetch watchlist", 500));
   }
 };

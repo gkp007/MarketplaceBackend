@@ -32,10 +32,7 @@ const ratingSchema = new mongoose.Schema<IRating>({
     trim: true,
     maxlength: [500, "Message cannot exceed 500 characters"],
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  createdAt: {type: Date},
 });
 
 const RatingModel = mongoose.model<IRating>("Rating", ratingSchema);
