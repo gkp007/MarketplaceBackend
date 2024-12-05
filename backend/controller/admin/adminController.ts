@@ -59,3 +59,20 @@ export const verifyBusiness = async (
     return next(new ErrorHandler(error.message || "Error on user Verify", 500));
   }
 };
+
+// Verify Business shop ---> ongoing
+export const VerifyBusinessShop = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const business = await Business.findById(id);
+    if (!business) return next(new ErrorHandler("Business not found", 404));
+  } catch (error: any) {
+    return next(
+      new ErrorHandler(error.message || "Internal Server Error", 500)
+    );
+  }
+};
