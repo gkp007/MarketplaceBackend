@@ -8,6 +8,9 @@ import { createKolkataTime } from "../../config/createKolkataTime";
 import WatchlistModel from "../../model/WatchlistModel";
 import { AuthenticatedRequest } from "../../types/express";
 import mongoose from "mongoose";
+import { getPresignedPutUrl } from "../../middleware/uploadFile";
+import path from "path";
+import axios from "axios";
 
 // Add Rating
 export const addRating = async (
@@ -79,17 +82,43 @@ export const updateProfile = async (
 ) => {
   try {
     const { id } = req.params;
-    const { name, avatar } = req.body;
+    const { name } = req.body;
 
     const user = await User.findById(id);
     if (!user) return next(new ErrorHandler("User Not Found", 404));
 
     if (name) user.name = name;
 
-    if (avatar && typeof avatar === "object") {
-      user.avatar = user.avatar || { public_id: "", url: "" };
-      if (avatar.public_id) user.avatar.public_id = avatar.public_id;
-      if (avatar.url) user.avatar.url = avatar.url;
+    if (req?.files) {
+      const avatarFile = req.files.avatar as any;
+      const fileKey = `avatars/${id}/${path.basename(avatarFile.name)}`;
+
+      const presignedUrlResult = await getPresignedPutUrl(
+        fileKey,
+        avatarFile.mimetype
+      );
+
+      if (!presignedUrlResult.success) {
+        throw new Error(
+          presignedUrlResult.error || "Failed to generate pre-signed URL"
+        );
+      }
+
+      try {
+        await axios.put(presignedUrlResult.url!, avatarFile.data, {
+          headers: {
+            "Content-Type": avatarFile.mimetype,
+          },
+        });
+
+        user.avatar = {
+          public_id: fileKey,
+          url: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`,
+        };
+      } catch (uploadError) {
+        console.error("Error uploading file to S3:", uploadError);
+        throw new Error("Failed to upload file to S3");
+      }
     }
 
     await user.save();
@@ -218,9 +247,8 @@ export const enquiryGet = async (
     res.status(201).json({
       success: true,
       message: "Inquiry Fetch successfully",
-      inquiry
-    })
-
+      inquiry,
+    });
   } catch (error: any) {
     next(new ErrorHandler(error.message || "Internal Server Error", 500));
   }

@@ -3,6 +3,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import middleware from './middleware/error';
 import { Request, Response, NextFunction } from 'express';
+import fileupload from 'express-fileupload'
+
 import 'dotenv/config'
 
 // Importing routes dynamically
@@ -11,6 +13,8 @@ import * as routes from './routes/index';
 const app: Application = express();
 
 app.use(express.json());
+app.use(express.urlencoded({extended: true})); 
+app.use(fileupload())
 app.use(cookieParser());
 app.use(cors({ credentials: true, origin: 'http://localhost:8080' }));
 
