@@ -1,17 +1,20 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import Business from "../../model/businessModel";
 import ErrorHandler from "../../utils/errorHnadeler";
 import "dotenv/config";
 import InquiryModel from "../../model/InquiryModel";
 import User from "../../model/userModel";
+import axios from "axios";
+import path from "path";
+import { getPresignedPutUrl } from "../../middleware/uploadFile";
 
-// create Business
 export const createBusinessProfile = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const {user_id}  = req.params;
+  const { user_id } = req.params;
+
   try {
     const {
       businessName,
@@ -25,72 +28,125 @@ export const createBusinessProfile = async (
       photos,
     } = req.body;
 
-    // Validate required fields
-    if (
-      !businessName ||
-      !location ||
-      !mobileNumber ||
-      !BusinessOpenDate ||
-      !GSTNO ||
-      !category ||
-      !serviceList ||
-      !photos
-    ) {
+    if (!businessName ||!location ||!mobileNumber ||!BusinessOpenDate ||!category ||!serviceList) {
       return next(new ErrorHandler("Please provide all required fields", 400));
     }
 
-    // Find the user by ID
+    // Find user
     const findUser = await User.findById(user_id);
     if (!findUser) {
       return next(new ErrorHandler("User not found", 404));
     }
 
-    // Check if the business already exists
-    const existingBusiness = await Business.findOne({
-      $or: [{ GSTNO }, { mobileNumber }],
-    });
-    if (existingBusiness) {
-      return next(
-        new ErrorHandler(
-          "Business with this GST number or mobile number already exists",
-          400
-        )
-      );
+    // Check for existing business
+    let business = await Business.findOne({ owner: findUser._id });
+
+    if (business) {
+      // Updating existing business
+      if (business.GSTNO !== GSTNO && GSTNO) {
+        return next(new ErrorHandler("GST number cannot be changed", 400));
+      }
+
+
+      const uploadedPhotos = photos || business.photos || [];
+      if (req.files && req.files.photos) {
+        const fileArray = Array.isArray(req.files.photos)
+          ? req.files.photos
+          : [req.files.photos];
+
+        for (const photoFile of fileArray) {
+          const fileKey = `businesses/${user_id}/${path.basename(photoFile.name)}`;
+          const presignedUrlResult = await getPresignedPutUrl(
+            fileKey,
+            photoFile.mimetype
+          );
+
+          if (!presignedUrlResult.success) {
+            throw new Error(
+              presignedUrlResult.error || "Failed to generate pre-signed URL"
+            );
+          }
+
+          await axios.put(presignedUrlResult.url!, photoFile.data, {
+            headers: {
+              "Content-Type": photoFile.mimetype,
+            },
+          });
+
+          uploadedPhotos.push({
+            public_id: fileKey,
+            url: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`,
+          });
+        }
+      }
+
+      // Update business fields
+      business.businessName = businessName;
+      business.location = location;
+      business.mobileNumber = mobileNumber;
+      business.webSiteLink = webSiteLink || business.webSiteLink;
+      business.BusinessOpenDate = BusinessOpenDate;
+      business.category = category;
+      business.serviceList = serviceList;
+      business.photos = uploadedPhotos;
+
+      await business.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Business updated successfully",
+        business,
+      });
+    } else {
+      // Create new business
+      if (!GSTNO) {
+        return next(
+          new ErrorHandler("GST number is required for creation", 400)
+        );
+      }
+
+      const newBusiness = new Business({
+        owner: findUser._id,
+        businessName,
+        location,
+        mobileNumber,
+        webSiteLink: webSiteLink || null,
+        BusinessOpenDate,
+        GSTNO,
+        category,
+        serviceList,
+        photos,
+      });
+
+      await newBusiness.save();
+
+      res.status(201).json({
+        success: true,
+        message: "Business created successfully",
+        business: newBusiness,
+      });
     }
-
-    if (!Array.isArray(photos) || photos.some((photo) => !photo.public_id || !photo.url)) {
-      return next(
-        new ErrorHandler("Photos must be an array of objects with public_id and url", 400)
-      );
-    }
-
-    const business = new Business({
-      owner: findUser._id,
-      businessName,
-      location,
-      mobileNumber,
-      webSiteLink: webSiteLink || null,
-      BusinessOpenDate,
-      GSTNO,
-      category,
-      serviceList,
-      photos,
-    });
-
-    await business.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Business created successfully",
-      business,
-    });
   } catch (error: any) {
-    return next(
-      new ErrorHandler(error.message || "Failed to create business", 500)
-    );
+    next(new ErrorHandler(error.message || "Failed to process request", 500));
   }
 };
 
+export const getBusinessProfile=async(
+  req: Request,
+  res: Response,
+  next: NextFunction
+)=>{
+  const { user_id } = req.params;
+  try {
+    const getBusniess = await Business.findOne({owner: user_id });
+    res.status(201).json({
+      success: true,
+      getBusniess,
+    });
+  } catch (error:any) {
+    new ErrorHandler(error.message || "Internal Server Error", 500)
+  }
+}
 
 // get Busuness
 export const getBusiness = async (

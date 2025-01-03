@@ -3,6 +3,7 @@ import {
   addOffer,
   createBusinessProfile,
   getAllInquiries,
+  getBusinessProfile,
 } from "../controller/BusinessOwner/businessController";
 import { authorizeRoles, isAuthenticatedUser } from "../middleware/auth";
 import { createOffer, getOffer } from "../controller/BusinessOwner/offerController";
@@ -12,10 +13,18 @@ const router = express.Router();
 
 router
   .route("/business-create/:user_id")
-  .post(
+  .put(
     isAuthenticatedUser,
     authorizeRoles("BusinessOwner"),
     createBusinessProfile
+  );
+
+router
+  .route("/business-get/:user_id")
+  .get(
+    isAuthenticatedUser,
+    authorizeRoles("BusinessOwner"),
+    getBusinessProfile
   );
 
 router

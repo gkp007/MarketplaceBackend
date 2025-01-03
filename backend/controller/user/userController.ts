@@ -133,6 +133,26 @@ export const updateProfile = async (
   }
 };
 
+// get profile
+export const getProfile = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return next(new ErrorHandler("User not authenticated", 401));
+    }
+    const user = req.user;
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error: any) {
+    next(new ErrorHandler(error.message || "Internal Server Error", 500));
+  }
+};
+
 // whatchlict toggle
 export const toggleWatchlist = async (
   req: AuthenticatedRequest,

@@ -1,6 +1,6 @@
 import express from "express";
 import { isAuthenticatedUser } from "../middleware/auth";
-import { addRating, getWatchlist, makeInquiry, toggleWatchlist, updateProfile } from "../controller/user/userController";
+import { addRating, getProfile, getWatchlist, makeInquiry, toggleWatchlist, updateProfile } from "../controller/user/userController";
 const router = express.Router();
 
 router.route("/users/rating/:id").post(isAuthenticatedUser,addRating);
@@ -12,4 +12,5 @@ router.route("/get-watchlist/:id").get(isAuthenticatedUser, getWatchlist);
 
 //update prole
 router.route("/update-profile/:id").put(isAuthenticatedUser,updateProfile)
+router.route("/get-profile").get(isAuthenticatedUser, getProfile)
 export default router;
