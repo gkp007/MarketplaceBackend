@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true})); 
 app.use(fileupload())
 app.use(cookieParser());
-app.use(cors({ credentials: true, origin: 'http://localhost:8080' }));
+app.use(cors({ origin: true, credentials: true }));
 
 
 // Function to automatically load routes

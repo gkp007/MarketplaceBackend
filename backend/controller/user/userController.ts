@@ -273,3 +273,26 @@ export const enquiryGet = async (
     next(new ErrorHandler(error.message || "Internal Server Error", 500));
   }
 };
+
+//check User Exists
+export const checkUserExists = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email, phoneNumber } = req.body;
+  try {
+    const user = await User.findOne({
+      $or: [{ email }, { phoneNumber }],
+    });
+
+    if (user) {
+      res.status(200).json({ exists: true });
+      return;
+    }
+
+    res.status(200).json({ exists: false });
+  } catch (error: any) {
+    next(new ErrorHandler(error.message || "Internal Server Error", 500));
+  }
+};
