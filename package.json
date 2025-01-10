@@ -5,8 +5,9 @@
   "repository": "https://github.com/gkp007/MarketplaceBackend.git",
   "author": "Debabrata Giri <debabratagiri@email.com>",
   "license": "MIT",
+  "type": "commonjs",
   "scripts": {
-    "start": "node backend/server.ts",
+    "start": "ts-node backend/server.ts",
     "dev": "nodemon backend/server.ts",
     "build": "tsc"
   },
