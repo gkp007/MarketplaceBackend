@@ -7,8 +7,8 @@
   "license": "MIT",
   "type": "commonjs",
   "scripts": {
-    "start": "ts-node backend/server.ts",
-    "dev": "nodemon backend/server.ts",
+    "start": "ts-node backend/app.ts",
+    "dev": "nodemon backend/app.ts",
     "build": "tsc"
   },
   "dependencies": {

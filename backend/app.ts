@@ -1,36 +1,19 @@
-import express, { Application } from 'express';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-import middleware from './middleware/error';
-import { Request, Response, NextFunction } from 'express';
-import fileupload from 'express-fileupload'
-
+import app from "./serverControll";
+import connectDb from "./config/db";
 import 'dotenv/config'
 
-// Importing routes dynamically
-import * as routes from './routes/index';
+// DB
+connectDb();
+const server = app.listen(process.env.PORT,()=>{
+    console.log(`server is Working..`)
+})
 
-const app: Application = express();
+// unhandel Promise rejection
+process.on('unhandledRejection',(err:any)=>{
+    console.log(`Error ${err.message}`);
+    console.log(`Shutting down the server due to Unhadel Promise rejection`);
 
-app.use(express.json());
-app.use(express.urlencoded({extended: true})); 
-app.use(fileupload())
-app.use(cookieParser());
-app.use(cors({ origin: true, credentials: true }));
-
-
-// Function to automatically load routes
-const autoRenderRouters = () => {
-  Object.values(routes).forEach((route:any) => {
-    app.use('/api/v1', route);
-  });
-};
-
-autoRenderRouters();
-
-// Middleware for handling errors
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  middleware(err, req, res, next);
-});
-
-export default app;
+    server.close(()=>{
+        process.exit(1)
+    })
+})
